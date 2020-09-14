@@ -7,7 +7,6 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Mission to Mars</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -17,27 +16,40 @@
       <p><a class="btn btn-primary btn-lg" href="/scrape" role="button">Scrape New Data</a></p>
     </div>
     <h1>Latest Mars News</h1>
-    <h2>{{ mars_info.news_title }}</h1>
-    <h3>{{ mars_info.news_paragraph }}</h3>
+    <h3>{{ mars_info.news_title }}</h3>
+    <h5>{{ mars_info.news_paragraph }}</h5>
 
-    <h1>Featured Mars Image</h1>
 
-    <main class="container">
-      <section id="main-vis">
-        <section id="figure">
-          <h1 id="summary">Featured Mars Image</h1>
+    <div class="row">
+      <div class="col-md-8">
+        <h1 id="featured_title">Featured Mars Image</h1>
+        <img src={{ mars_info.featured_image }} width="800" height="500" alt="Featured image">
+      </div>
 
-          <img id="vispag-image" src={{ mars_info.featured_image }} alt="Featured image">
-        </section>
-      </section>
-  
-      <aside id="visualizations">
-        <h2>Visualizations</h2>
-        <a href="vispag_1.html">
-          <img id="vis-image" src="Resources/assets/images/Fig1.png" alt="Max Temperature">
-        </a>
-      </aside>
-    </main>
+      <div class="col-md-4">
+        <h3>Current weather on Mars</h3>
+        <h5>{{ mars_info.weather }}</h5>
+        <h3>Mars Facts</h3>
+        {{mars_info.facts | safe}}
+      </div>
+    </div>
+
+
+    <div class="container text-center">
+      <div class="row">
+        <div class="col-md-12">
+          <h1>Mars Hemispheres</h1>
+        </div>
+      </div>
+      
+      {% for image in mars_info.hemisp_image %}
+        <div class="col-sm-6">
+          <img id="comp-image" src={{ image.img_url }} width="350" height="350" alt={{ image.title }}>
+          <h4>{{ image.title }}</h4>
+        </div>
+      {% endfor %}
+    </div>
+
 
   </div>
   </div>

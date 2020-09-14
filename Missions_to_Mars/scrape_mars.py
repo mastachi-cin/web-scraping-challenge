@@ -6,10 +6,8 @@ import time
 
 
 def init_browser():
-    # @NOTE: Replace the path with your actual path to the chromedriver
-    #executable_path = {"executable_path": "/usr/local/bin/chromedriver"}
-    #return Browser("chrome", **executable_path, headless=False)
-    return
+    executable_path = {"executable_path": "/usr/local/bin/chromedriver"}
+    return Browser("chrome", **executable_path, headless=False)
 
 def scrape_mars_news():
     # URL of page to be scraped
@@ -30,13 +28,10 @@ def scrape_mars_news():
     # Scrape the news paragraph text
     news_parag = result.find('div', class_='rollover_description_inner').text.replace("\n", "")
 
+    # Return results
     return (news_title, news_parag)
 
-def scrape_mars_featured_img():
-    #Set up browser
-    executable_path = {'executable_path': '/usr/local/bin/chromedriver'}
-    browser = Browser('chrome', **executable_path, headless=False)
-
+def scrape_mars_featured_img(browser):
     # URL of page to be scraped
     url = 'https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars'
 
@@ -46,8 +41,8 @@ def scrape_mars_featured_img():
     # Click on full image button
     browser.click_link_by_partial_text('FULL IMAGE')
 
-    # Time needed
-    time.sleep(1)
+    # Time needed to display page
+    time.sleep(2)
 
     # Click on more info button
     browser.click_link_by_partial_text('more info')
@@ -57,7 +52,7 @@ def scrape_mars_featured_img():
     soup = bs(html, 'html.parser')
 
     # Time needed for parsing completition
-    time.sleep(1)
+    time.sleep(2)
     result = soup.find('figure', class_='lede')
 
     # Relative path
@@ -66,11 +61,15 @@ def scrape_mars_featured_img():
     # Absolute path
     abs_image_url = 'https://www.jpl.nasa.gov' + rel_image_url
 
-    # Close browser
-    browser.quit()
-
+    # Return results
     return abs_image_url
 
+def scrape_mars_weather():
+
+    mars_weather = ""
+
+    # Return results
+    return mars_weather
 
 def scrape_mars_facts():
     # URL of page to be scraped
@@ -92,37 +91,89 @@ def scrape_mars_facts():
     # Strip unwanted newlines to clean up the table
     html_table = html_table.replace('\n', '')
 
+    # Return results
     return html_table
 
+def scrape_mars_hemisp(browser):
+
+    # URL of page to be scraped
+    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+
+    # Open browser for searching
+    browser.visit(url)
+
+    # Create BeautifulSoup object; parse with html.parser
+    html = browser.html
+    soup = bs(html, 'html.parser')
+
+    # results as an iterable list
+    results = soup.find_all('div', class_="description")
+
+    # List of dictionaries
+    hemisphere_image_urls = []
+
+    # Loop through returned results
+    for result in results:
+        # Error handling
+        try:
+            # Image title
+            title = result.a.h3.text
+        
+            # Click on image title
+            browser.click_link_by_partial_text(title)
+        
+            # Create a second BeautifulSoup object; parse with html.parser
+            html_fullimg = browser.html
+            soup_fullimg = bs(html_fullimg, 'html.parser')
+        
+            # Find full image
+            result2 = soup_fullimg.find('div', class_='downloads')
+            result_fullimg = result2.find_all('li')
+            url_fullimg = result_fullimg[0].a['href']
+        
+            # Add dictionary to images list
+            hemisphere_image_urls.append({'title': title, 'img_url': url_fullimg})
+        
+            # Back to initial page
+            browser.back()
+        except AttributeError as e:
+            print(e)
+
+    # Return results
+    return hemisphere_image_urls
+
 def scrape():
-    #browser = init_browser()
-
-    # Visit visitcostarica.herokuapp.com
-    #url = "https://visitcostarica.herokuapp.com/"
-    #browser.visit(url)
-
-    #time.sleep(1)
-
-    # Scrape page into Soup
-    #html = browser.html
-    #soup = bs(html, "html.parser")
-
+    
+    # Scrape mars latest news
     news_t, news_p = scrape_mars_news()
 
-    featured_image_url = scrape_mars_featured_img()
+    # Scrape mars weather
+    weather = scrape_mars_weather()
 
+    #Set up browser
+    browser = init_browser()
+
+    # Scrape mars featured image
+    featured_image_url = scrape_mars_featured_img(browser)
+
+    # Scrape mars images hemispheres
+    hemisp_images = scrape_mars_hemisp(browser)
+
+    # Close browser
+    browser.quit()
+
+    # Scrape mars facts
     facts_table = scrape_mars_facts()
-
-
 
     # Store data in a dictionary
     mars_data = {
         "news_title": news_t,
         "news_paragraph": news_p,
         "featured_image": featured_image_url,
-        "facts": facts_table
+        "weather": weather,
+        "facts": facts_table,
+        "hemisp_image": hemisp_images
     }
-
 
     # Return results
     return mars_data

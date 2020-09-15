@@ -64,9 +64,24 @@ def scrape_mars_featured_img(browser):
     # Return results
     return abs_image_url
 
-def scrape_mars_weather():
+def scrape_mars_weather(browser):
 
-    mars_weather = ""
+    # URL of page to be scraped
+    url = 'https://twitter.com/marswxreport?lang=en'
+
+    # Open browser for searching
+    browser.visit(url)
+
+    # Time needed for loading entire page
+    time.sleep(5)
+
+    # Create BeautifulSoup object; parse with html.parser
+    html = browser.html
+    soup = bs(html, 'html.parser')
+
+    # Find latest mars weather tweet
+    result = soup.find('div', class_="css-901oao r-hkyrab r-1qd0xha r-a023e6 r-16dba41 r-ad9z0x r-bcqeeo r-bnwqim r-qvutc0")
+    mars_weather = result.text
 
     # Return results
     return mars_weather
@@ -147,14 +162,14 @@ def scrape():
     # Scrape mars latest news
     news_t, news_p = scrape_mars_news()
 
-    # Scrape mars weather
-    weather = scrape_mars_weather()
-
     #Set up browser
     browser = init_browser()
 
     # Scrape mars featured image
     featured_image_url = scrape_mars_featured_img(browser)
+
+    # Scrape mars weather
+    weather = scrape_mars_weather(browser)
 
     # Scrape mars images hemispheres
     hemisp_images = scrape_mars_hemisp(browser)
